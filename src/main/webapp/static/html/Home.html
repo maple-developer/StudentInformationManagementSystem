@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <base href=".">
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></link>
+    <link rel="stylesheet" href="../css/fuzzy-lookup.css">
+</head>
+<body>
+<div id="app">
+    <!--    Login User-->
+    <div id="login_user">
+        <div>
+            <template>
+                <el-row class="demo-avatar demo-basic">
+                    <el-col :span="12">
+                        <div class="demo-basic--circle">
+                            <div class="block">
+                                <el-avatar :size="50" :src="circleUrl"></el-avatar>
+                            </div>
+                        </div>
+                        <div class="login_user">
+                            {{ login_user.username }}
+                            <el-button type="text" v-if="login_user.username !== ''" @click="dialogVisible = true">
+                                sign out
+                            </el-button>
+                            <el-button type="text" v-if="login_user.username === ''" @click="jumpToLoginPage">
+                                sign in
+                            </el-button>
+                        </div>
+                    </el-col>
+                </el-row>
+            </template>
+        </div>
+        <el-dialog
+                title="提示"
+                :visible.sync="dialogVisible"
+                width="30%"
+                :before-close="handleClose">
+            <span>Ary you sure sign to log out</span>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="handleDialog(dialogVisible = false)">取 消</el-button>
+                <el-button type="primary" @click="handleDialog(dialogVisible = true)">确 定</el-button>
+            </span>
+        </el-dialog>
+    </div>
+
+    <!--    Fuzzy lookup-->
+    <div class="fuzzy-lookup">
+        <el-input
+                maxlength="13"
+                placeholder="学 号"
+                v-model="studentInfo.studentID"
+                clearable>
+        </el-input>
+        <el-input
+                placeholder="姓 名"
+                v-model="studentInfo.name"
+                clearable>
+        </el-input>
+        <el-input
+                placeholder="学 院"
+                v-model="studentInfo.academy"
+                clearable>
+        </el-input>
+        <el-input
+                placeholder="年 级"
+                v-model="studentInfo.grade"
+                clearable>
+        </el-input>
+        <el-input
+                placeholder="专 业"
+                v-model="studentInfo.specialty"
+                clearable>
+        </el-input>
+        <el-input
+                placeholder="联系方式"
+                v-model="studentInfo.contact"
+                clearable>
+        </el-input>
+        <template>
+            年龄:
+            <el-input-number v-model="studentInfo.age" @change="handleChange" :min="1" :max="50"
+                             label="年龄"></el-input-number>
+        </template>
+        <template>
+            <el-select v-model="studentInfo.status" clearable placeholder="状 态">
+                <el-option
+                        v-for="item in options"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                </el-option>
+            </el-select>
+        </template>
+        <el-button type="primary" icon="el-icon-search" @click="fuzzySearch">搜 索</el-button>
+    </div>
+
+    <!--    content table-->
+    <div id="table">
+        <template>
+            <el-table
+                    ref="multipleTable"
+                    :data="studentData"
+                    tooltip-effect="dark"
+                    border="true"
+                    highlight-current-row="true"
+                    header-dragend="newWidth"
+                    style="width: 100%"
+                    @selection-change="handleSelectionChange">
+                <el-table-column
+                        type="selection"
+                        width="55">
+                </el-table-column>
+                <el-table-column
+                        type="index"
+                        width="40">
+                </el-table-column>
+                <el-table-column
+                        prop="studentID"
+                        label="学号"
+                        width="140">
+                </el-table-column>
+                <el-table-column
+                        prop="name"
+                        label="姓名"
+                        width="120">
+                </el-table-column>
+                <el-table-column
+                        prop="age"
+                        label="年龄"
+                        show-overflow-tooltip>
+                </el-table-column>
+                <el-table-column
+                        prop="academy"
+                        label="学院"
+                        show-overflow-tooltip>
+                </el-table-column>
+                <el-table-column
+                        prop="grade"
+                        label="年级"
+                        show-overflow-tooltip>
+                </el-table-column>
+                <el-table-column
+                        prop="specialty"
+                        show-overflow-tooltip="true"
+                        label="专业"
+                        show-overflow-tooltip>
+                </el-table-column>
+                <el-table-column
+                        prop="contact"
+                        label="联系方式"
+                        show-overflow-tooltip>
+                </el-table-column>
+                <el-table-column
+                        prop="status"
+                        label="状态"
+                        show-overflow-tooltip>
+                </el-table-column>
+                <el-table-column
+                        fixed="right"
+                        label="操作"
+                        width="100">
+                    <template slot-scope="scope">
+                        <el-button @click="open_edit_drawer(scope.row)" type="text" size="small">编辑</el-button>
+                    </template>
+                </el-table-column>
+
+                <!--                <div id="empty_table" v-if="studentData.length == 0">-->
+                <!--                    <el-empty description=""></el-empty>-->
+                <!--                </div>-->
+            </el-table>
+
+
+            <div id="button" style="margin-top: 20px">
+                <el-button @click="toggleAddDrawer()">添 加</el-button>
+                <template>
+                    <el-popconfirm
+                            title="确定删除吗？" @confirm="deleteMultipleSelection()"
+                    >
+                        <el-button slot="reference">删 除</el-button>
+                    </el-popconfirm>
+                </template>
+                <el-button @click="toggleSelection()">取消选择</el-button>
+            </div>
+        </template>
+    </div>
+
+    <!--    Drawer<-->
+    <div id="drawer">
+        <!--    Add-Drawer-->
+        <el-drawer
+                title="Add Student Item"
+                :visible.sync="add_drawer"
+                :with-header="false">
+            <span>添加学生信息条目</span>
+            <el-form :model="studentForm" :rules="rules" ref="studentForm" label-width="100px" class="demo-ruleForm">
+                <el-form-item label="学号" prop="studentID">
+                    <el-input v-model="studentForm.studentID"></el-input>
+                </el-form-item>
+                <el-form-item label="姓名" prop="name">
+                    <el-input v-model="studentForm.name"></el-input>
+                </el-form-item>
+                <el-form-item label="年龄" prop="age">
+                    <el-input v-model="studentForm.age"></el-input>
+                </el-form-item>
+                <el-form-item label="学院" prop="academy">
+                    <el-input v-model="studentForm.academy"></el-input>
+                </el-form-item>
+                <el-form-item label="年级" prop="grade">
+                    <el-input v-model="studentForm.grade"></el-input>
+                </el-form-item>
+                <el-form-item label="专业" prop="specialty">
+                    <el-input v-model="studentForm.specialty"></el-input>
+                </el-form-item>
+                <el-form-item label="联系方式" prop="contact">
+                    <el-input v-model="studentForm.contact"></el-input>
+                </el-form-item>
+                <el-form-item label="状态" prop="status">
+                    <el-select v-model="studentForm.status" placeholder="请选择学生状态">
+                        <el-option label="在读" value="在读"></el-option>
+                        <el-option label="毕业" value="毕业"></el-option>
+                        <el-option label="延迟毕业" value="延迟毕业"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="submitForm('studentForm')">添加</el-button>
+                    <el-button @click="resetForm('studentForm')">重置</el-button>
+                </el-form-item>
+            </el-form>
+        </el-drawer>
+    </div>
+
+    <!--    Edit-Drawer-->
+    <div id="edit_drawer">
+        <el-drawer
+                title="学生信息表单"
+                :before-close="handleCloseForForm"
+                :visible.sync="edit_drawer"
+                direction="ltr"
+                custom-class="demo-drawer"
+                ref="drawer"
+        >
+            <div class="demo-drawer__content">
+                <el-form :model="studentForm" :rules="rules">
+                    <el-form-item label="学号" :label-width="formLabelWidth">
+                        <el-input v-model="studentForm.studentID" disabled
+                                  autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="姓名" prop="name" :label-width="formLabelWidth">
+                        <el-input v-model="studentForm.name" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="年龄" prop="age" :label-width="formLabelWidth">
+                        <el-input v-model="studentForm.age" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="学院" prop="academy" :label-width="formLabelWidth">
+                        <el-input v-model="studentForm.academy" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="年级" prop="grade" :label-width="formLabelWidth">
+                        <el-input v-model="studentForm.grade" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="专业" prop="specialty" :label-width="formLabelWidth">
+                        <el-input v-model="studentForm.specialty" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="联系方式" prop="contact" :label-width="formLabelWidth">
+                        <el-input v-model="studentForm.contact" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="状态" prop="status" :label-width="formLabelWidth">
+                        <template>
+                            <el-select v-model="studentForm.status" placeholder="请选择">
+                                <el-option
+                                        v-for="item in options"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </template>
+                    </el-form-item>
+                </el-form>
+                <div class="demo-drawer__footer">
+                    <el-button @click="cancelForm">取 消</el-button>
+                    <el-button type="primary" @click="modify_stu_info(studentForm)" :loading="loading">
+                        {{ loading ? '提交中 ...' : '修 改' }}
+                    </el-button>
+                </div>
+            </div>
+        </el-drawer>
+    </div>
+
+    <!--    Pagination-->
+    <div id="pagination">
+        <template>
+            <div class="block">
+                <el-pagination
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                        :current-page="currentPage"
+                        :page-sizes="[10, 20, 30, 40]"
+                        :page-size="100"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="totalItem">
+                </el-pagination>
+            </div>
+        </template>
+    </div>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                //
+                // id: table
+                //
+                studentData: [],
+                multipleSelection: [],
+                //
+                // id: login_user
+                //
+                login_user: {
+                    email: '',
+                    username: '',
+                    passwd: ''
+                },
+                dialogVisible: false,
+                circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
+                //
+                // class: fuzzy-lookup
+                // TODO: FUZZY LOOKUP
+                studentInfo: {
+                    studentID: '',
+                    name: '',
+                    age: 1,
+                    academy: '',
+                    grade: '',
+                    specialty: '',
+                    contact: '',
+                    status: ''
+                },
+                //
+                // id: edit_drawer
+                //
+                edit_drawer: false,
+                timer: null,
+                loading: false,
+                formLabelWidth: '80px',
+                options: [{
+                    value: '在读',
+                    label: '在读'
+                }, {
+                    value: '延迟毕业',
+                    label: '延迟毕业'
+                }, {
+                    value: '已毕业',
+                    label: '已毕业'
+                }],
+                studentForm: {
+                    studentID: '',
+                    name: '',
+                    age: '',
+                    academy: '',
+                    grade: '',
+                    specialty: '',
+                    contact: '',
+                    status: ''
+                },
+                //
+                // id: add_drawer
+                //
+                add_drawer: false,
+                rules: {
+                    studentID: [
+                        {required: true, message: '请输入学生学号', trigger: 'blur'},
+                        {min: 13, max: 13, message: '学号应为13位数字', trigger: 'blur'}
+                    ],
+                    name: [
+                        {required: true, message: '请输入学生姓名', trigger: 'blur'},
+                    ],
+                    age: [
+                        {required: true, message: '请输入学生年龄', trigger: 'blue'}
+                    ],
+                    academy: [
+                        {required: true, message: '请输入学生所在学院', trigger: 'blue'}
+                    ],
+                    grade: [
+                        {required: true, message: '请输入学生年级', trigger: 'blur'},
+                        {min: 4, max: 4, message: '年级应为学生入学年份，如2019', trigger: 'blur'}
+                    ],
+                    specialty: [
+                        {required: true, message: '请输入学生专业', trigger: 'blur'}
+                    ],
+                    contact: [
+                        {required: true, message: '请输入学生联系方式', trigger: 'blur'}
+                    ],
+                    status: [
+                        {required: true, message: '请选择学生状态', trigger: 'change'}
+                    ],
+                },
+                //
+                // id: pagination
+                //
+                currentPage: 1,
+                totalItem: 0,
+                size: 10,
+            }
+        },
+
+        mounted() {
+            this.getLoginUser();
+            this.getTotalItem();
+            this.handleSizeChange(this.size)
+        },
+
+        methods: {
+            getLoginUser() {
+                const _this = this
+                axios.get(
+                    '/StudentInformationManagementSystem_war/account/login_user'
+                ).then(function (resp) {
+                    _this.login_user = JSON.parse(resp.data.data)
+                });
+            },
+            getAllStudents() {
+                const _this = this
+                axios.get(
+                    '/StudentInformationManagementSystem_war/stu/get_all'
+                ).then(function (resp) {
+                    if (resp.data.flag)
+                        _this.studentData = JSON.parse(resp.data.data)
+                });
+            },
+            //
+            // class: fuzzy-lookup
+            //
+            handleChange(value) {
+                console.log(value);
+            },
+            fuzzySearch() {
+                console.log(this.studentInfo)
+                var _this = this
+                axios.post(
+                    '/StudentInformationManagementSystem_war/stu/fuzzy-search', {
+                        studentID: _this.studentInfo.studentID,
+                        name: _this.studentInfo.name,
+                        age: _this.studentInfo.age,
+                        academy: _this.studentInfo.academy,
+                        grade: _this.studentInfo.grade,
+                        specialty: _this.studentInfo.specialty,
+                        contact: _this.studentInfo.contact,
+                        status: _this.studentInfo.status,
+                    }
+                ).then(function (resp) {
+                    if (resp.data.flag) {
+                        _this.studentData = JSON.parse(resp.data.data)
+                        _this.totalItem = _this.studentData.length
+                    }
+                });
+            },
+            //
+            // id: table
+            // Cancel the selected entry in the table.
+            //
+            toggleSelection(rows) {
+                if (rows) {
+                    rows.forEach(row => {
+                        this.$refs.multipleTable.toggleRowSelection(row);
+                    });
+                } else {
+                    this.$refs.multipleTable.clearSelection();
+                }
+            },
+            // Assign the selected items in the table to the multiple Selection array.
+            handleSelectionChange(val) {
+                this.multipleSelection = val;
+            },
+            //
+            // id: login_user
+            //
+            // handel the logged out dialog inside div that id is login_user.
+            handleDialog(dialogVisible) {
+                const _this = this
+                if (dialogVisible) {
+                    axios.get(
+                        '/StudentInformationManagementSystem_war/account/sign_out'
+                    ).then(function (resp) {
+                        _this.dialogVisible = false
+                        if (resp.data.flag) {
+                            // location.href = '/StudentInformationManagementSystem_war/';
+                            location.reload()
+                        }
+                    });
+                }
+            },
+            handleClose(done) {
+                this.$confirm('确认关闭？')
+                    .then(_ => {
+                        done();
+                    })
+                    .catch(_ => {
+                    });
+            },
+            jumpToLoginPage() {
+                location.href = "/StudentInformationManagementSystem_war/"
+            },
+            //
+            // id: edit_drawer
+            //
+            // Open edit drawer and edit student information.
+            open_edit_drawer(row) {
+                console.log(row)
+                this.edit_drawer = true;
+                this.studentForm = row;
+                console.log(row);
+            },
+            // Cancel submit form to server.
+            handleCloseForForm(done) {
+                if (this.loading) {
+                    return;
+                }
+                this.$confirm('关闭学生信息表单?')
+                    .then(_ => {
+                        this.edit_drawer = false;
+                    })
+                    .catch(_ => {
+                    });
+            },
+            // Close the form inside drawer that id is edit_drawer.
+            cancelForm() {
+                this.loading = false;
+                this.edit_drawer = false;
+                clearTimeout(this.timer);
+            },
+            //
+            // id: add_drawer
+            //
+            toggleAddDrawer() {
+                this.add_drawer = true;
+            },
+            submitForm(formName) {
+                console.log(this.$refs[formName])
+                const _this = this;
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        axios.post(
+                            '/StudentInformationManagementSystem_war/stu/add', {
+                                studentID: _this.studentForm.studentID,
+                                name: _this.studentForm.name,
+                                age: _this.studentForm.age,
+                                academy: _this.studentForm.academy,
+                                grade: _this.studentForm.grade,
+                                specialty: _this.studentForm.specialty,
+                                contact: _this.studentForm.contact,
+                                status: _this.studentForm.status
+                            }
+                        ).then(function (resp) {
+                            _this.$alert(resp.data.data)
+                        });
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+            },
+            //
+            // id: pagination
+            //
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                const _this = this
+                _this.currentPage = 1;
+                _this.size = val
+                axios.get(
+                    '/StudentInformationManagementSystem_war/stu/item?page=' + _this.currentPage + '&size=' + val
+                ).then(function (resp) {
+                    if (resp.data.flag) {
+                        console.log(resp.data.data)
+                        _this.studentData = JSON.parse(resp.data.data)
+                    }
+                });
+            },
+            handleCurrentChange(val) {
+                const _this = this
+                console.log(`当前页: ${val}`);
+                this.currentPage = val;
+                axios.get(
+                    '/StudentInformationManagementSystem_war/stu/item?page=' + val + '&size=' + _this.size
+                ).then(function (resp) {
+                    console.log(resp.data.data)
+                    if (resp.data.flag) {
+                        _this.studentData = JSON.parse(resp.data.data)
+                    }
+                });
+            },
+            getTotalItem() {
+                const _this = this;
+                axios.get(
+                    '/StudentInformationManagementSystem_war/stu/total-item'
+                ).then(function (resp) {
+                    if (resp.data.flag) {
+                        _this.totalItem = parseInt(resp.data.data)
+                        console.log(_this.totalItem)
+                    }
+                })
+            },
+            //
+            // api
+            //
+            modify_stu_info(stu_info) {
+                const _this = this;
+                axios.post(
+                    '/StudentInformationManagementSystem_war/stu/modify', {
+                        studentID: stu_info.studentID,
+                        name: stu_info.name,
+                        age: stu_info.age,
+                        academy: stu_info.academy,
+                        grade: stu_info.grade,
+                        specialty: stu_info.specialty,
+                        contact: stu_info.contact,
+                        status: stu_info.status
+                    }
+                ).then(function (resp) {
+                    console.log(resp.data.flag)
+                    _this.$alert(resp.data.info)
+                    if (resp.data.flag) {
+                        _this.cancelForm();
+                        location.reload();
+                    }
+                });
+            },
+            // Delete all items selected in the table.
+            deleteMultipleSelection() {
+                if (this.multipleSelection.length === 0) {
+                    this.$refs.alert('请先选择要删除的学生条目')
+                }
+                const _this = this;
+                for (let i = 0; i < this.multipleSelection.length; i++) {
+                    console.log(this.multipleSelection[i])
+                    axios.get(
+                        '/StudentInformationManagementSystem_war/stu/drop?stu_id=' + this.multipleSelection[i].studentID
+                    ).then(function (resp) {
+                        console.log(resp.data.flag)
+                        _this.$alert(resp.data.info)
+                        if (resp.data.flag) {
+                            location.reload()
+                        }
+                    });
+                }
+            },
+        }
+    })
+</script>
+</body>
+</html>

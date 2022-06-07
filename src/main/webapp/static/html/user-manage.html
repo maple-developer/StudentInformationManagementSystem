@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></link>
+</head>
+<body>
+<div id="app">
+    <input type="button" value="DEMO" @click="test_alert">
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        methods: {
+            test_alert() {
+                this.$alert('hello')
+            },
+        }
+    })
+</script>
+</body>
+</html>

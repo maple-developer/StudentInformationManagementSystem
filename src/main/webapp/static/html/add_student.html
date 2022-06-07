@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Add Student</title>
+
+    <style>
+        #id_err, #name_err, #age_err, #academy_err, #grade_err {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div id="form_div">
+    <form action="" method="post" id="info_form">
+        姓 名: <label for="name"></label><input type="text" v-model="student.name" id="name">
+        <span id="name_err"
+              style="display: none">name can not empty.</span>
+        <br>
+        年 龄: <label for="age"></label><input type="text" v-model="student.age" id="age">
+        <span id="age_err"
+              style="display: none">Age can not empty.</span>
+        <br>
+        学 院: <label for="academy"></label><input type="text" v-model="student.academy" id="academy">
+        <span
+                id="academy_err"
+                style="display: none">Academy can not empty.</span>
+        <br>
+        年 级: <label for="grade"></label><input type="text" v-model="student.grade" id="grade">
+        <span id="grade_err"
+              style="display: none">Grade can not empty.</span>
+        <br>
+    </form>
+    <br>
+    <span id="operation_button">
+        <input type="button" id="add_button" v-on:click="submit_stu_info" value="Add">
+        <input type="button" id="excel_button" v-on:click="back_homepage" value="Excel">
+    </span>
+</div>
+
+<!--<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    // the item for data that will be added to database can not empty.
+    /*
+        document.getElementById('name').onblur = function () {
+            if (this.value === '') {
+                document.getElementById('name_err').style.display = ''
+            } else {
+                document.getElementById('name_err').style.display = 'none';
+            }
+        };
+        document.getElementById('age').onblur = function () {
+            if (this.value === '') {
+                document.getElementById('age_err').style.display = ''
+            } else {
+                document.getElementById('age_err').style.display = 'none';
+            }
+        };
+        document.getElementById('academy').onblur = function () {
+            if (this.value === '') {
+                document.getElementById('academy_err').style.display = ''
+            } else {
+                document.getElementById('academy_err').style.display = 'none';
+            }
+        };
+        document.getElementById('grade').onblur = function () {
+            if (this.value === '') {
+                document.getElementById('grade_err').style.display = ''
+            } else {
+                document.getElementById('grade_err').style.display = 'none';
+            }
+        };
+    */
+
+    // the data for be added to database.
+    /*
+        let form_data =
+            {
+                name: document.getElementById('name').value,
+                age: document.getElementById('age').value,
+                academy: document.getElementById('academy').value,
+                grade: document.getElementById('grade').value
+            };
+    */
+
+    new Vue({
+        el: '#form_div',
+        data() {
+            return {
+                student: {}
+            }
+        },
+        methods: {
+            submit_stu_info() {
+                const _this = this;
+                axios.post(
+                    '/ProjectExercise_war/stu/add',
+                    _this.student
+                ).then(function (resp) {
+                    if (resp.data) {
+                        alert('Operation successful.')
+                        location.href = '/ProjectExercise_war/static/html/homepage.html'
+                    } else {
+                        alert('Operation failure.')
+                    }
+                });
+            },
+            back_homepage() {
+                location.href = '/ProjectExercise_war/static/html/homepage.html'
+            }
+        }
+    });
+
+    // send request with asynchronous to AddStudentServlet when click the add_button button.
+    /*
+        document.getElementById('add_button').onclick = function () {
+            axios.post(
+                '/ProjectExercise_war/stu/add',
+                {
+                    name: document.getElementById('name').value,
+                    age: document.getElementById('age').value,
+                    academy: document.getElementById('academy').value,
+                    grade: document.getElementById('grade').value
+                }
+            ).then(function (resp) {
+                if (resp.data) {
+                    alert('Operation successful.')
+                    location.href = '/ProjectExercise_war/HTML/homepage.html'
+                } else {
+                    alert('Operation failure.')
+                }
+            });
+        }
+    */
+</script>
+</body>
+</html>

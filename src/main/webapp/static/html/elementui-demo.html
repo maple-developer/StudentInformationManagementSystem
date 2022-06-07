@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ElementUI Demo</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></link>
+</head>
+<body>
+<div id="app">
+    <el-button @click="visible = true">按钮</el-button>
+    <el-dialog :visible.sync="visible" title="Hello world">
+        <p>欢迎使用 Element</p>
+    </el-dialog>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+<!--<script src="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></script>-->
+
+<script>
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {visible: false}
+        }
+    })
+</script>
+</body>
+</html>

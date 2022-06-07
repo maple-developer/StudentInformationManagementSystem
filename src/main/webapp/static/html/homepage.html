@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>HomePage</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></link>
+</head>
+<body>
+<div id="app">
+    <span style="margin: fill">
+        <span>{{login_user}}</span>
+        <span>
+            <button v-on:click="sign_out">SignOut</button>
+        </span>
+    </span>
+    <div>
+        <el-button v-on:click="add_student_panel" type="primary" round>Add Student</el-button>
+    </div>
+    <template>
+        <el-table
+                :data="students"
+                border
+                style="width: 100%">
+            <el-table-column
+                    prop="id"
+                    label="学号"
+                    width="150">
+            </el-table-column>
+            <el-table-column
+                    prop="name"
+                    label="姓名"
+                    width="120">
+            </el-table-column>
+            <el-table-column
+                    prop="age"
+                    label="年龄"
+                    width="80">
+            </el-table-column>
+            <el-table-column
+                    prop="academy"
+                    label="学院"
+                    width="120">
+            </el-table-column>
+            <el-table-column
+                    prop="grade"
+                    label="年级"
+                    width="150">
+            </el-table-column>
+            <el-table-column
+                    fixed="right"
+                    label="操作"
+                    width="100">
+                <template slot-scope="scope">
+                    <el-button @click="look_over(scope.row)" type="text" size="small">查看</el-button>
+                    <el-button @click="edit_panel(scope.row)" type="text" size="small">编辑</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </template>
+    <!--    look over student detail-->
+    <div>
+        <el-drawer
+                title="Student Detail"
+                :visible.sync="look_over_drawer"
+                :with-header="false">
+            <span>Student Detail</span>
+            <div>
+                <p>ID: {{student.id}}</p>
+                <p>Name: {{student.name}}</p>
+                <p>Age: {{student.age}}</p>
+                <p>Academy: {{student.academy}}</p>
+                <p>Grade: {{student.grade}}</p>
+            </div>
+            <input type="button" value="Delete" style="color: red" v-on:click="drop_student(student.id)"/>
+            <input type="button" value="Cancel" v-on:click="look_over_back"/>
+        </el-drawer>
+    </div>
+    <!--    edit student info-->
+    <div>
+        <el-drawer
+                title="Edit Student Information"
+                :visible.sync="edit_drawer"
+                :with-header="false">
+            <span>Edit Student Information</span>
+            <div>
+                <input type="text" v-model="student.id" disabled>
+                <input type="text" v-model="student.name">
+                <input type="text" v-model="student.age">
+                <input type="text" v-model="student.academy">
+                <input type="text" v-model="student.grade">
+            </div>
+            <input type="button" value="Modify" style="color: red" v-on:click="modify_stu_info(student)"/>
+            <input type="button" value="Cancel" v-on:click="edit_panel_back"/>
+        </el-drawer>
+    </div>
+    <!--    add student information to database-->
+    <div>
+        <el-drawer
+                title="Edit Student Information"
+                :visible.sync="add_drawer"
+                :with-header="false">
+            <span>Add Student Information</span>
+            <div>
+                <input type="text" placeholder="Student ID" v-model="student.id">
+                <input type="text" placeholder="Student Name" v-model="student.name">
+                <input type="text" placeholder="Student Age" v-model="student.age">
+                <input type="text" placeholder="Student Academy" v-model="student.academy">
+                <input type="text" placeholder="Student Grade" v-model="student.grade">
+            </div>
+            <input type="button" value="Add" style="color: blue" v-on:click="add_stu_info(student)"/>
+            <input type="button" value="Cancel" v-on:click="add_panel_back"/>
+        </el-drawer>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                students: [],
+                student: {},
+                login_user: 'hello',
+                look_over_drawer: false,
+                edit_drawer: false,
+                add_drawer: false,
+            }
+        },
+        methods: {
+            look_over(row) {
+                this.look_over_drawer = true;
+                this.get_student_data(row);
+            },
+            edit_panel(row) {
+                this.edit_drawer = true;
+                this.get_student_data(row);
+            },
+            get_student_data(row) {
+                const _this = this;
+                console.log(row);
+                axios.get(
+                    '/ProjectExercise_war/stu/get?id=' + row.id
+                ).then(function (resp) {
+                    if (resp.data.flag) {
+                        const data = resp.data.info;
+                        console.log(data)
+                        _this.student = JSON.parse(data);
+                    } else {
+                        alert(resp.data.info)
+                    }
+                });
+            },
+            get_all_students() {
+                const _this = this;
+                axios.get(
+                    '/ProjectExercise_war/stu/selectAll'
+                ).then(function (resp) {
+                    if (resp.data.flag) {
+                        const data = resp.data.info;
+                        _this.students = JSON.parse(data);
+                        console.log(data)
+                    } else {
+                        alert('No students in database.')
+                    }
+                });
+            },
+            add_student_panel() {
+                this.add_drawer = true;
+            },
+            modify_stu_info(student) {
+                const flag = confirm('Are you sure to modify student information?');
+                const _this = this
+                _this.student = student
+                console.log(_this.student)
+                if (flag) {
+                    axios.post(
+                        '/ProjectExercise_war/stu/modify',
+                        {
+                            id: _this.student.id,
+                            name: _this.student.name,
+                            age: _this.student.age,
+                            academy: _this.student.academy,
+                            grade: _this.student.grade
+                        }
+                    ).then(function (resp) {
+                        alert(resp.data.info);
+                        if (resp.data.flag) {
+                            location.reload();
+                        }
+                    });
+                }
+            },
+            add_stu_info(student) {
+                const flag = confirm("Are you sure to add student information to database?");
+                if (flag) {
+                    const _this = this;
+                    console.log(student)
+                    axios.post(
+                        '/ProjectExercise_war/stu/add', {
+                            id: null,
+                            name: student.name,
+                            age: student.age,
+                            academy: student.academy,
+                            grade: student.grade
+                        }
+                    ).then(function (resp) {
+                        alert(resp.data.info)
+                        if (resp.data.flag) {
+                            location.href = '/ProjectExercise_war/static/html/homepage.html'
+                            location.reload()
+                        }
+                    });
+                }
+            },
+            sign_out() {
+                if (this.login_user === '') {
+                    alert('You have not logged in.')
+                } else {
+                    axios.get(
+                        '/ProjectExercise_war/account/sign_out'
+                    ).then(function (resp) {
+                        alert(resp.data.info)
+                        if (resp.data.flag) {
+                            location.href = '/ProjectExercise_war/static/html/login.html';
+                        }
+                    });
+                }
+            },
+            drop_student(id) {
+                console.log("Student ID: " + id)
+                const flag = confirm("Are you sure to delete the student information?");
+                if (flag) {
+                    axios.get(
+                        '/ProjectExercise_war/stu/delete?id=' + id
+                    ).then(function (resp) {
+                        alert(resp.data.info)
+                    }).finally(function () {
+                        location.reload();
+                    });
+                }
+            },
+            look_over_back() {
+                this.look_over_drawer = false;
+            },
+            edit_panel_back() {
+                this.edit_drawer = false;
+            },
+            add_panel_back() {
+                this.add_drawer = false;
+            },
+        },
+        mounted() {
+            const _this = this;
+            this.get_all_students();
+            axios.get(
+                '/ProjectExercise_war/account/login_user'
+            ).then(function (resp) {
+                _this.login_user = resp.data.info
+            });
+        },
+    });
+</script>
+</body>
+</html>

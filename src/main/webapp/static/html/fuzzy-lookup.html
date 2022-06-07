@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fuzzy Lookup</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></link>
+</head>
+<body>
+<div id="app">
+    <el-input
+            maxlength="13"
+            placeholder="学 号"
+            v-model="studentInfo.studentID"
+            clearable>
+    </el-input>
+    <el-input
+            maxlength="13"
+            placeholder="姓 名"
+            v-model="studentInfo.name"
+            clearable>
+    </el-input>
+    <el-input
+            maxlength="13"
+            placeholder="学 院"
+            v-model="studentInfo.academy"
+            clearable>
+    </el-input>
+    <el-input
+            maxlength="13"
+            placeholder="专 业"
+            v-model="studentInfo.specialty"
+            clearable>
+    </el-input>
+    <el-input
+            maxlength="13"
+            placeholder="联系方式"
+            v-model="studentInfo.contact"
+            clearable>
+    </el-input>
+    <div class="block">
+        <el-date-picker
+                v-model="studentInfo.grade"
+                type="year"
+                placeholder="学 年">
+        </el-date-picker>
+    </div>
+    <template>
+        <el-input-number v-model="studentInfo.age" @change="handleChange" :min="1" :max="10" label="描述文字"></el-input-number>
+    </template>
+    <template>
+        <el-select v-model="studentInfo.status" clearable placeholder="状 态">
+            <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+            </el-option>
+        </el-select>
+    </template>
+    <el-button type="primary" icon="el-icon-search">搜 索</el-button>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                studentInfo: {
+                    studentID: '',
+                    name: '',
+                    age: 1,
+                    academy: '',
+                    grade: '',
+                    specialty: '',
+                    contact: '',
+                    status: ''
+                },
+                options: [{
+                    value: '在读',
+                    label: '在读'
+                }, {
+                    value: '延迟毕业',
+                    label: '延迟毕业'
+                }, {
+                    value: '已毕业',
+                    label: '已毕业'
+                }],
+                option: '',
+            }
+        }
+    })
+</script>
+</body>
+</html>

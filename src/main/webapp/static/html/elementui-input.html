@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Register</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></link>
+</head>
+<body>
+<div id="app">
+    <form action="" method="post">
+        <span id="username">
+            UserName:
+            <el-input
+                    placeholder="UserName"
+                    v-model="account.username"
+                    v-on:blur="username_alert"
+                    clearable>
+            </el-input>
+        </span>
+        <br>
+        <span>
+        PassWord:
+            <el-input
+                    placeholder="Password"
+                    v-model="account.passwd"
+                    v-on:blur="passwd_alert"
+                    clearable>
+            </el-input>
+        </span>
+        <br>
+        <span>
+        Email:
+            <el-input
+                    placeholder="Email"
+                    v-model="account.email"
+                    v-on:blur="email_alert"
+                    clearable>
+            </el-input>
+        </span>
+        <br>
+        <el-button type="primary" v-on:click="register" round>注 册</el-button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                account: {
+                    username: '',
+                    passwd: '',
+                    email: ''
+                },
+            }
+        },
+        methods: {
+            register() {
+                if (this.verify_email) {
+                    alert('UserName already exists.')
+                } else if (this.verify_email) {
+                    alert('You already have an account.')
+                } else {
+                    const _this = this;
+                    axios.post(
+                        '/ProjectExercise_war/register',
+                        {
+                            username: _this.account.username,
+                            passwd: _this.account.passwd,
+                            email: _this.account.email
+                        }
+                    ).then(function (resp) {
+                        if (resp.data) {
+                            alert('Register successfully.')
+                        } else {
+                            alert('Register failure.')
+                        }
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }
+            },
+            username_alert() {
+                if (this.username === '') {
+                    alert('UserName can not empty.')
+                } else {
+                    const _this = this;
+                    axios.get(
+                        '/ProjectExercise_war/user/selectUserByUserName?username=' + this.username.value
+                    ).then(function (resp) {
+                        if (resp.data) {
+                            _this.verify_username = resp.data;
+                            alert('UserName already exists.')
+                        }
+                    })
+                }
+            },
+            passwd_alert() {
+                if (this.passwd === '')
+                    alert('Password can not empty!')
+            },
+            email_alert() {
+                if (this.email === '') {
+                    alert('Email can not empty!')
+                } else {
+                    const _this = this;
+                    axios.get(
+                        '/ProjectExercise_war/user/selectUserByEmail?email=' + this.email.value
+                    ).then(function (resp) {
+                        _this.verify_email = resp.data;
+                        if (resp.data) {
+                            alert('You already have an account.')
+                        }
+                    })
+                }
+            },
+        }
+    });
+</script>
+</body>
+</html>

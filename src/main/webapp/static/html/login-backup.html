@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></link>
+</head>
+<body>
+<div id="app">
+    <form action="" method="post">
+        <label>
+            Username<input name="username" placeholder="username" type="text" v-on:blur="check_username"
+                           v-model="account.username">
+        </label>
+        <br>
+        <label>
+            Password<input name="passwd" placeholder="password" type="password" v-on:blur="check_passwd"
+                           v-model="account.passwd">
+        </label>
+        <br>
+        <label>
+            Verification Code<input placeholder="verification code" type="text"
+                                    v-model="verify_code" maxlength="4">
+            <img id="code" :src="img_url" v-on:click="update_code"
+                 alt="">
+        </label>
+        <br>
+        <br>
+        <span id="action_button">
+            <el-button type="primary" v-on:click="submit_form" round>Login</el-button>
+            <el-button type="primary" v-on:click="go_to_register" round>Register</el-button>
+        </span>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                account: {
+                    username: '',
+                    passwd: '',
+                },
+                img_url: '/ProjectExercise_war/account/code/get_code',
+                verify_code: '',
+            };
+        },
+        methods: {
+            submit_form() {
+                if (!this.check_username() || !this.check_passwd() || this.verify_code === '') {
+                    alert('You must complete the login information.')
+                } else {
+                    const _this = this;
+                    axios.get(
+                        '/ProjectExercise_war/account/code/verify_code?verify_code=' + _this.verify_code
+                    ).then(function (resp) {
+                        if (resp.data.flag) {
+                            axios.post(
+                                '/ProjectExercise_war/account/login', {
+                                    username: _this.account.username,
+                                    passwd: _this.account.passwd,
+                                }
+                            ).then(function (resp) {
+                                alert(resp.data.data)
+                                if (resp.data.flag) {
+                                    location.href = '/ProjectExercise_war/static/html/Home.html';
+                                }
+                            });
+                        } else {
+                            alert(resp.data.data)
+                        }
+                    });
+                }
+            },
+            check_username() {
+                return this.account.username !== '';
+            },
+            check_passwd() {
+                return this.account.passwd !== '';
+            },
+            // TODO: update verification code
+            update_code() {
+            },
+            go_to_register() {
+                location.href = '/ProjectExercise_war/static/html/register.html'
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
+

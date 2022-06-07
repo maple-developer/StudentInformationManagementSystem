@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Registration</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></link>
+    <style>
+        #passwd_err, #code_err {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <form action="" method="post">
+        <label>
+            Username: <input type="text" v-model="account.username" placeholder="enter your username"/>
+        </label>
+        <br>
+        <label>
+            Password: <input type="password" v-model="account.passwd" placeholder="enter your password"/>
+        </label>
+        <br>
+        <label>
+            Confirm: <input type="password" v-on:blur="confirm_passwd" v-model="account.confirm"
+                            placeholder="Confirm the password"/>
+        </label>
+        <span id="passwd_err" style="display: none">
+            Password does not match
+        </span>
+        <br>
+        <div>
+            <div>
+                <label>
+                    Email: <input type="email" v-model="account.email" placeholder="enter your email"/>
+                </label>
+                <span>
+                    <input type="button" value="Get Verification Code" style="background: green"
+                           v-on:click="get_code"></input>
+                </span>
+            </div>
+            <br>
+            <div>
+                <label>
+                    Verify: <input type="text" v-model="input_code" maxlength="4"
+                                   placeholder="enter your verification code"/>
+                </label>
+            </div>
+            <div id="code_err" style="display: none">
+                Verification Code is empty.
+            </div>
+        </div>
+        <br>
+        <br>
+        <div>
+            <input type="button" v-on:click="submit_form" value="Register">
+            <input type="button" v-on:click="back_to_login" value="Back To Login">
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                account: {
+                    username: '',
+                    passwd: '',
+                    confirm: '',
+                    email: "",
+                },
+                input_code: '',
+                server_code: '',
+                finished: false,
+            }
+        },
+        methods: {
+            confirm_passwd() {
+                if (this.account.passwd !== this.account.confirm) {
+                    this.finished = false;
+                    document.getElementById('passwd_err').style.display = '';
+                } else {
+                    this.finished = true;
+                    document.getElementById('passwd_err').style.display = 'none';
+                }
+            },
+            submit_form() {
+                if (this.finished) {
+                    const _this = this;
+                    if (this.input_code !== '') {
+                        axios.get(
+                            '/ProjectExercise_war/account/code/verify_code?verify_code=' + _this.input_code
+                        ).then(function (resp) {
+                            if (resp.data.flag) {
+                                axios.post(
+                                    '/ProjectExercise_war/account/register', {
+                                        username: _this.account.username,
+                                        passwd: _this.account.passwd,
+                                        email: _this.account.email
+                                    }
+                                ).then(function (resp) {
+                                    alert(resp.data.info)
+                                    if (resp.data.flag) {
+                                        location.href = '/ProjectExercise_war/static/html/login.html'
+                                    }
+                                });
+                            } else {
+                                alert(resp.data.info)
+                            }
+                        });
+                    } else {
+                        alert('Verification Code can not empty.')
+                    }
+                }
+            },
+            back_to_login() {
+                location.href = '/ProjectExercise_war/static/html/login.html'
+            },
+            get_code() {
+                const _this = this;
+                axios.get(
+                    '/ProjectExercise_war/account/register/send_auth_mail?email=' + _this.account.email
+                ).then(function (resp) {
+                    alert(resp.data.info)
+                })
+            },
+        }
+    });
+</script>
+</body>
+</html>

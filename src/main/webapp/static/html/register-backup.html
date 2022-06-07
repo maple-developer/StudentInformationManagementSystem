@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Registration</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></link>
+</head>
+<body>
+<div id="app">
+    <div style="margin: 20px;"></div>
+    <el-form :label-position="right" label-width="80px" :model="formLabelAlign">
+        <el-form-item label="UserName">
+            <el-input v-on:blur="username_alert" v-model="account.username"></el-input>
+        </el-form-item>
+        <el-form-item label="Password">
+            <el-input type="password" v-on:blur="passwd_alert" v-model="account.passwd"></el-input>
+        </el-form-item>
+        <el-form-item label="Email">
+            <el-input v-on:blur="email_alert" v-model="account.email"></el-input>
+        </el-form-item>
+    </el-form>
+    <el-button type="primary" v-on:click="register" round>Register</el-button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                account: {
+                    username: '',
+                    passwd: '',
+                    email: ''
+                },
+            }
+        },
+        methods: {
+            register() {
+                if (this.verify_email || this.verify_username || this.account.passwd === '') {
+                    alert('You must complete the registration information.')
+                } else {
+                    const _this = this;
+                    axios.post(
+                        '/ProjectExercise_war/account/register',
+                        {
+                            username: _this.account.username,
+                            passwd: _this.account.passwd,
+                            email: _this.account.email
+                        }
+                    ).then(function (resp) {
+                        if (resp.data) {
+                            alert('Registration successfully.')
+                        } else {
+                            alert('Registration failure.')
+                        }
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }
+            },
+            username_alert() {
+                if (this.account.username === '') {
+                    alert('UserName can not empty.')
+                } else {
+                    const _this = this;
+                    axios.get(
+                        '/ProjectExercise_war/user/selectUserByUserName?username=' + _this.account.username
+                    ).then(function (resp) {
+                        if (resp.data) {
+                            _this.verify_username = resp.data;
+                            alert('UserName already exists.')
+                        }
+                    })
+                }
+            },
+            passwd_alert() {
+                if (this.account.passwd === '')
+                    alert('Password can not empty!')
+            },
+            email_alert() {
+                if (this.account.email === '') {
+                    alert('Email can not empty!')
+                } else {
+                    const _this = this;
+                    axios.get(
+                        '/ProjectExercise_war/user/selectUserByEmail?email=' + _this.account.email
+                    ).then(function (resp) {
+                        _this.verify_email = resp.data;
+                        if (resp.data) {
+                            alert('You already have an account.')
+                        }
+                    })
+                }
+            },
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8">
+    <title>Home Page</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+
+<h3>Welcome to HomePage</h3>
+
+<span><input type="button" id="addStudent" value="Add Student"></span>
+
+<br>
+
+<div id="students_div">
+    <table id="allStudentsTable" style="width:100%">
+        <tr>
+            <td>学号</td>
+            <td>姓名</td>
+            <td>年龄</td>
+            <td>学院</td>
+            <td>年级</td>
+        </tr>
+        <tr v-for="student in students">
+            <td>{{ student.id }}</td>
+            <td>{{ student.name }}</td>
+            <td>{{ student.age }}</td>
+            <td>{{ student.academy }}</td>
+            <td>{{ student.grade }}</td>
+        </tr>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+<script src="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></script>
+<script>
+    new Vue({
+        el: '#students_div',
+        data() {
+            return {
+                students: []
+            }
+        },
+        mounted() {
+            const _this = this;
+            axios.get(
+                '/ProjectExercise_war/stu/selectAll'
+            ).then(function (resp) {
+                _this.students = resp.data;
+            });
+        },
+    });
+    /*
+        axios.get(
+            '/ProjectExercise_war/selectAll'
+        ).then(function (resp) {
+            let students = resp.data;
+            let table_data = "<tr>\n        <td>学号</td>\n        <td>姓名</td>\n        <td>年龄</td>\n        <td>学院</td>\n        <td>年级</td>\n    <td>操作</td>\n    </tr>";
+            const allStudentsTable = document.getElementById('allStudentsTable');
+            for (let i = 0; i < students.length; i++) {
+                let student = students[i];
+                table_data += "<tr>"
+                    + "<td>" + student.id + "</td>"
+                    + "<td>" + student.name + "</td>"
+                    + "<td>" + student.age + "</td>"
+                    + "<td>" + student.academy + "</td>"
+                    + "<td>" + student.grade + "</td>"
+                    + "<td><label for=\"modify_operate\"></label><input id=\"modify_operate\" type=\"button\" value=\"修改\">"
+                    + " <label for=\"delete_operate\"></label><input id=\"delete_operate\" type=\"button\" value=\"删除\"></td>"
+                    + "</tr>"
+            }
+            allStudentsTable.innerHTML = table_data;
+        })
+    */
+
+    // redirect to other page when click the add_student button.
+    document.getElementById('addStudent').onclick = function () {
+        location.href = '/ProjectExercise_war/static/html/add_student.html'
+    };
+
+    // binding event to delete and modify button
+    document.getElementById('delete_button').onclick = function () {
+    };
+</script>
+
+</body>
+</html>

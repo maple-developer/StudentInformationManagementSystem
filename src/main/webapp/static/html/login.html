@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></link>
+</head>
+<body>
+<div id="app">
+    <el-form :model="accountForm" status-icon :rules="rules" ref="accountForm" label-width="100px"
+             class="demo-ruleForm">
+        <el-form-item label="Email" prop="email">
+            <el-input type="email" v-model="accountForm.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="Passwrod" prop="passwd">
+            <el-input type="password" v-model="accountForm.passwd" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="验证码" prop="verify_code">
+            <el-input type="text" v-model="accountForm.verify_code"></el-input>
+            <img id="code" :src="img_url" v-on:click=""
+                 alt="">
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="submitForm('accountForm')">提交</el-button>
+            <el-button @click="resetForm('accountForm')">重置</el-button>
+        </el-form-item>
+    </el-form>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            var validatePass = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入密码'));
+                }
+            };
+            var checkCode = (rule, value, callback) => {
+                const _this = this;
+                if (value === '') {
+                    callback(new Error('请输入验证码'));
+                } else {
+                    axios.get(
+                        '/ProjectExercise_war/account/code/verify_code?verify_code=' + _this.verify_code
+                    ).then(function (resp) {
+                        if (!resp.data.flag) {
+                            callback(new Error("验证码错误"))
+                        }
+                    });
+                }
+            };
+            return {
+                accountForm: {
+                    email: '',
+                    passwd: '',
+                    verify_code: '',
+                },
+                img_url: '/ProjectExercise_war/account/code/get_code',
+                rules: {
+                    passwd: [
+                        {validator: validatePass, trigger: 'blur'}
+                    ],
+                    verify_code: [
+                        {validator: checkCode, trigger: 'blur'}
+                    ]
+                }
+            };
+        },
+        methods: {
+            submitForm(formName) {
+                const _this = this
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        axios.post(
+                            '/ProjectExercise_war/account/login', {
+                                username: _this.account.username,
+                                passwd: _this.account.passwd,
+                            }
+                        ).then(function (resp) {
+                            _this.$refs.alert(resp.data.data)
+                            if (resp.data.flag) {
+                                location.href = '/ProjectExercise_war/static/html/Home.html';
+                            }
+                        });
+                    } else {
+                        console.log('error submit!!');
+                        _this.$refs.alert('You must complete the form information!')
+                        return false;
+                    }
+                });
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AXIOS</title>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    axios.post('/ProjectExercise_war/selectUser?username=maple'
+    ).then(function (response) {
+        alert(response);
+    }).catch(function (error) {
+        alert(error);
+    });
+</script>
+</body>
+</html>
