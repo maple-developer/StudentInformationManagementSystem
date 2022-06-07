@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.maple.mapper.StudentMapper">
+    <resultMap id="studentMap" type="com.maple.entities.Student">
+        <id column="id" property="id"/>
+        <result column="stu_id" property="studentID"/>
+        <result column="name" property="name"/>
+        <result column="age" property="age"/>
+        <result column="academy" property="academy"/>
+        <result column="grade" property="grade"/>
+        <result column="specialty" property="specialty"/>
+        <result column="contact" property="contact"/>
+        <result column="status" property="status"/>
+    </resultMap>
+    <insert id="addStudent" parameterType="com.maple.entities.Student">
+        insert into tb_student (stu_id, name, age, academy, grade, specialty, contact, status)
+        values (#{studentID}, #{name}, #{age}, #{academy}, #{grade}, #{specialty}, #{contact}, #{status})
+    </insert>
+    <update id="modifyStudentData" parameterType="com.maple.entities.Student">
+        update tb_student
+        set name      = #{name},
+            age       = #{age},
+            academy   = #{academy},
+            grade     = #{grade},
+            specialty = #{specialty},
+            contact   =#{contact},
+            status    = #{status}
+        where stu_id = #{studentID}
+    </update>
+    <delete id="deleteStudentByStudentID">
+        delete
+        from tb_student
+        where stu_id = #{stu_id}
+    </delete>
+    <select id="selectStudentByStudentID" resultType="com.maple.entities.Student">
+        select *
+        from tb_student
+        where stu_id = #{stu_id}
+    </select>
+    <select id="selectAllStudents" resultMap="studentMap">
+        select *
+        from tb_student
+    </select>
+    <select id="getTotalItem" resultType="java.lang.Integer">
+        select count(*)
+        from tb_student
+    </select>
+    <select id="getStudentItems" resultMap="studentMap">
+        select *
+        from tb_student limit #{start}, #{size}
+    </select>
+    <select id="fuzzySearchStudent" parameterType="com.maple.entities.Student" resultMap="studentMap">
+        <bind name="studentIDPattern" value="'%' + _parameter.getStudentID() + '%'"/>
+        <bind name="namePattern" value="'%' + _parameter.getName() + '%'"/>
+        <bind name="academyPattern" value="'%' + _parameter.getAcademy() + '%'"/>
+        <bind name="contactPattern" value="'%' + _parameter.getContact() + '%'"/>
+        select * from tb_student
+        <where>
+            <if test="studentID != ''">
+                stu_id like #{studentIDPattern}
+            </if>
+            <if test="name != ''">
+                or name like #{namePattern}
+            </if>
+            <if test="age != 1">
+                or age = #{age}
+            </if>
+            <if test="academy != ''">
+                or academy like #{academyPattern}
+            </if>
+            <if test="grade != ''">
+                or grade = #{grade}
+            </if>
+            <if test="specialty != ''">
+                or specialty = #{specialty}
+            </if>
+            <if test="contact != ''">
+                or contact like #{contactPattern}
+            </if>
+            <if test="status != ''">
+                or status = #{status}
+            </if>
+        </where>
+    </select>
+</mapper>

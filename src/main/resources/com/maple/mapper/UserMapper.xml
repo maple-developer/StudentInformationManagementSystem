@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.maple.mapper.UserMapper">
+    <insert id="register" parameterType="com.maple.entities.User">
+        insert into tb_user (username, passwd, email)
+        values (#{username}, #{passwd}, #{email})
+    </insert>
+    <update id="updatePasswordByEmail">
+        update tb_user
+        set passwd = #{passwd}
+        where email = #{email}
+    </update>
+    <select id="selectUserByUserName" resultType="com.maple.entities.User">
+        select *
+        from tb_user
+        where username = #{username}
+    </select>
+    <select id="selectUserByEmail" resultType="com.maple.entities.User">
+        select *
+        from tb_user
+        where email = #{email}
+    </select>
+    <select id="selectUserByUserNameAndPassword" resultType="com.maple.entities.User">
+        select *
+        from tb_user
+        where username = #{username}
+          and passwd = #{passwd}
+    </select>
+    <select id="selectUserByEmailAndPassword" resultType="com.maple.entities.User">
+        select *
+        from tb_user
+        where email = #{email}
+          and passwd = #{passwd}
+    </select>
+</mapper>

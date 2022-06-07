@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+    <property name="LOG_DIR" value="/var/log/application"/>
+    <property name="LOG_FILE_NAME" value="app-test"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} --[%thread] %-5level %logger{50}:%L - %msg%n
+            </pattern>
+        </layout>
+    </appender>
+    <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${LOG_FILE_NAME}.log</file>
+        <immediateFlush>true</immediateFlush>
+        <append>true</append>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${LOG_FILE_NAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each archived file, size max 10MB -->
+            <maxFileSize>5MB</maxFileSize>
+            <!-- total size of all archive files, if total size > 20GB, it will delete old archived file -->
+            <totalSizeCap>100MB</totalSizeCap>
+            <!-- 60 days to keep -->
+            <maxHistory>1</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} --[%thread] %-5level %logger{50}:%L - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.maple" level="info" additivity="false">
+        <!--        <appender-ref ref="CONSOLE"/>-->
+        <appender-ref ref="FILE-ROLLING"/>
+    </logger>
+
+    <!--    <root level="info">-->
+    <!--        <appender-ref ref="CONSOLE"/>-->
+    <!--        &lt;!&ndash;        <appender-ref ref="FILE-ROLLING"/>&ndash;&gt;-->
+    <!--    </root>-->
+
+</configuration>
